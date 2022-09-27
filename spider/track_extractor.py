@@ -7,7 +7,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from enum import Enum, auto
 from time import time
-from collections import ChainMap
+
 
 class TrackSources(Enum):
     """ Radio sources """
@@ -78,26 +78,27 @@ class StreamMediaSpotify:
         )
 
     def find_track(self, track_name: str):
+        """ Get/ Find track details from Spotify """
         track_details = dict()
         # Fetch Spotify for given track and limit resp at 1
         self.spotify_result = self.spotify.search(q=track_name, type="track", limit=1)
         # Get item details
-        # print(self.spotify_result.get("tracks", {}).get("items", [""]))
-        self.spotify_first_item = self.spotify_result.get("tracks", {}).get("items", [""])[0]
+        items = self.spotify_result.get("tracks", {}).get("items", [""])
+        self.spotify_first_item = items[0] if items else {}
         # Build full dict with all details
-        # track_details.update({**self.__find_artist(), **self.__find_song(), **self.__find_song_thumbnail()})
-        for details in [self.__find_artist(), self.__find_song(), self.__find_song_thumbnail()]:
-            track_details.update(details)
+        track_details.update({**self.__find_artist(), **self.__find_song(), **self.__find_song_thumbnail()})
         return track_details
 
     def __find_artist(self) -> Dict[str, List[str]]:
+        """ Find artist names """
         artists = {"spotify_song_artists": [""]}
         spotify_artists = self.spotify_first_item.get("artists")
         if spotify_artists:
-            artists["spotify_song_artists"] = [artists for artists in spotify_artists]
+            artists["spotify_song_artists"] = [artists.get("name") for artists in spotify_artists]
         return artists
 
-    def __find_song(self) -> Dict[str,str]:
+    def __find_song(self) -> Dict[str, str]:
+        """Find song song id, song api url in Spotify"""
         return {
             "spotify_song_id": self.spotify_first_item.get("id"),
             "spotify_song_api": self.spotify_first_item.get("href"),
@@ -105,7 +106,12 @@ class StreamMediaSpotify:
             "spotify_song_preview": self.spotify_first_item.get("preview_url"),
         }
 
-    def __find_song_thumbnail(self):
+    def __find_song_thumbnail(self) -> Dict[str, str]:
+        """ Find song thumbnail in Spotify"""
+        thumbnail = self.spotify_first_item.get("album", {}).get("images", [{}])[0]
+        print(thumbnail)
         return {
-            "spotify_song_id": self.spotify_first_item.get("album", {}).get("images", [""])[0]
+            "spotify_song_thumbnail": thumbnail.get("url")
         }
+
+
