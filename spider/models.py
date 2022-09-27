@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 
 class TrackModel(models.Model):
@@ -9,6 +10,9 @@ class TrackModel(models.Model):
     track_name = models.CharField(max_length=50)
     track_date = models.DateField()
 
+    def __repr__(self):
+        return self.track_id
+
 
 class SpotifyModel(models.Model):
     spotify_id = models.ForeignKey(TrackModel, on_delete=models.CASCADE)
@@ -18,8 +22,8 @@ class SpotifyModel(models.Model):
     # fields with URL value
     spotify_song_api = models.CharField(max_length=400)
     spotify_song_external_urls = models.CharField(max_length=400)
-    spotify_song_preview = models.CharField(max_length=400)
+    spotify_song_preview = models.CharField(max_length=400, null=True)
     spotify_song_thumbnail = models.CharField(max_length=400)
     spotify_date = models.DateField()
-    updated_date = models.DateField()
+    updated_date = models.DateField(default=datetime.now)
 

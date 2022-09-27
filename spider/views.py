@@ -5,7 +5,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import UserSerializer
 from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify
-import json
+from .models import TrackModel, SpotifyModel
+
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -25,5 +26,17 @@ def spider_welcome(request):
 def spider_radio(request):
     t = TrackExtractorImpuls(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
-    spotify = StreamMediaSpotify().find_track(details.radio_name)
-    return Response(spotify)
+    spotify_details = StreamMediaSpotify().find_track(details.radio_name)
+    if not spotify_details.get("spotify_song_id"):
+        return Response(spotify_details)
+    # Save track details in Database
+    track_details_model = TrackModel(**details.__dict__)
+    track_details_model.save()
+    # Add track details models as spotify Id to be added in database as Foreign Key
+    spotify_details["spotify_id"] = track_details_model
+    # Save spotify details in Database
+    spotify_model = SpotifyModel(**spotify_details)
+    spotify_model.save()
+    # Delete spotify id because it was used only to for Database purpose
+    del spotify_details["spotify_id"]
+    return Response(spotify_details)

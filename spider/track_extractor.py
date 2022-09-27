@@ -7,7 +7,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from enum import Enum, auto
 from time import time
-
+from datetime import datetime
 
 class TrackSources(Enum):
     """ Radio sources """
@@ -23,7 +23,7 @@ class TrackDetails:
     track_source: TrackSources
     track_singer: str = field(init=False)
     track_name: str = field(init=False)
-    track_date: time
+    track_date: datetime
 
     def __post_init__(self) -> None:
         """ Get singer and track name from radio stream name """
@@ -49,7 +49,7 @@ class TrackExtractorImpuls(TrackExtractor):
         return {
             "radio_name": self._extract_track(result),
             "track_source": self.source,
-            "track_date": time()
+            "track_date": datetime.now()
 
         }
 
@@ -81,6 +81,8 @@ class StreamMediaSpotify:
         """ Get/ Find track details from Spotify """
         track_details = dict()
         # Fetch Spotify for given track and limit resp at 1
+        track_details['spotify_date'] = datetime.now()
+        #
         self.spotify_result = self.spotify.search(q=track_name, type="track", limit=1)
         # Get item details
         items = self.spotify_result.get("tracks", {}).get("items", [""])
