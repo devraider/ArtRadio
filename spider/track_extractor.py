@@ -101,7 +101,9 @@ class StreamMediaSpotify:
         artists = {"spotify_song_artists": [""]}
         spotify_artists = self.spotify_first_item.get("artists")
         if spotify_artists:
-            artists["spotify_song_artists"] = [artists.get("name") for artists in spotify_artists]
+            artists_list = [artists.get("name") for artists in spotify_artists]
+            # Convert artist into string to be saved propery in database
+            artists["spotify_song_artists"] = ",".join(artists_list)
         logger.debug(f"Artist found {artists}")
         return artists
 
