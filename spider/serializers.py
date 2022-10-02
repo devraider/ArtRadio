@@ -18,6 +18,10 @@ class GroupSerializer(serializers.HyperlinkedModelSerializer):
 class SpotifyModelSerializer(serializers.ModelSerializer):
     class Meta:
         model = SpotifyModel
-        fields = ['spotify_song_artists', 'spotify_song_id', 'spotify_song_api',
-                  'spotify_song_external_urls', 'spotify_song_preview', 'spotify_song_thumbnail',
-                  'spotify_date', 'updated_date']
+        fields = '__all__'
+
+
+class TrackModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TrackModel
+        fields = '__all__'

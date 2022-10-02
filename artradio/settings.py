@@ -77,15 +77,16 @@ WSGI_APPLICATION = 'artradio.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('PSQ_NAME'),
+        'USER': os.getenv('PSQ_USER'),
+        'PASSWORD':os.getenv('PSQ_PASS'),
+        'HOST': os.getenv('PSQ_HOST'),
+        'PORT': os.getenv('PSQ_PORT'),
     }
 }
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 

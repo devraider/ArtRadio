@@ -25,5 +25,5 @@ class SpotifyModel(models.Model):
     spotify_song_preview = models.CharField(max_length=400, null=True, blank=True)
     spotify_song_thumbnail = models.CharField(max_length=400, blank=True)
     spotify_date = models.DateField(auto_now=True)
-    updated_date = models.DateField(auto_now_add=datetime.now)
+    updated_date = models.DateField(auto_now_add=datetime.now, editable=True)
 
