@@ -133,3 +133,21 @@ REST_FRAMEWORK = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 YAML_CONFIG_MAP = yaml.load(open("artradio/config.yaml", "r"), Loader=yaml.Loader)
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'spider_file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR/'spider.debug.log'
+        },
+    },
+    'loggers': {
+        'spider.views': {
+            'handlers': ['spider_file'],
+            'level': 'DEBUG',
+
+        }
+    },
+}

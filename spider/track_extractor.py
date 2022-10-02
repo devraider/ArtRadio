@@ -8,6 +8,10 @@ from spotipy.oauth2 import SpotifyOAuth
 from enum import Enum, auto
 from time import time
 from datetime import datetime
+import logging
+
+# Instanciate logger because can not import logger from view
+logger = logging.getLogger('spider.views')
 
 class TrackSources(Enum):
     """ Radio sources """
@@ -89,6 +93,7 @@ class StreamMediaSpotify:
         self.spotify_first_item = items[0] if items else {}
         # Build full dict with all details
         track_details.update({**self.__find_artist(), **self.__find_song(), **self.__find_song_thumbnail()})
+        logger.debug(f"Track found {track_details}")
         return track_details
 
     def __find_artist(self) -> Dict[str, List[str]]:
@@ -97,21 +102,23 @@ class StreamMediaSpotify:
         spotify_artists = self.spotify_first_item.get("artists")
         if spotify_artists:
             artists["spotify_song_artists"] = [artists.get("name") for artists in spotify_artists]
+        logger.debug(f"Artist found {artists}")
         return artists
 
     def __find_song(self) -> Dict[str, str]:
         """Find song song id, song api url in Spotify"""
+        logger.debug(f"Loading song details")
         return {
             "spotify_song_id": self.spotify_first_item.get("id"),
             "spotify_song_api": self.spotify_first_item.get("href"),
-            "spotify_song_external_urls": self.spotify_first_item.get("external_urls"),
+            "spotify_song_external_urls": self.spotify_first_item.get("external_urls", {}).get("spotify"),
             "spotify_song_preview": self.spotify_first_item.get("preview_url"),
         }
 
     def __find_song_thumbnail(self) -> Dict[str, str]:
         """ Find song thumbnail in Spotify"""
         thumbnail = self.spotify_first_item.get("album", {}).get("images", [{}])[0]
-        print(thumbnail)
+        logger.debug(f"Thumbnail found: {thumbnail}")
         return {
             "spotify_song_thumbnail": thumbnail.get("url")
         }

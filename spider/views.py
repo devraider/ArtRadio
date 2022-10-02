@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify
 from .models import TrackModel, SpotifyModel
-from django.conf import settings
-from datetime import datetime
+import logging
+
+# Instantiate logger with file name
+logger = logging.getLogger(__name__)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -43,7 +45,8 @@ def handler_spider_radio() -> dict:
     # Add track details models as spotify Id to be added in database as Foreign Key
     spotify_details["spotify_id"] = model_track
     # Save spotify details in Database
-    SpotifyModel.objects.update_or_create(**spotify_details)
+    model_spotify, created_spotify = SpotifyModel.objects.update_or_create(**spotify_details)
     # Delete spotify id because it was used only to for Database purpose
     del spotify_details["spotify_id"]
+    logger.info(f"Spotify track was added {created_spotify!r} -> {model_spotify.__dict__}")
     return spotify_details
