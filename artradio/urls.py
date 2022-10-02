@@ -22,6 +22,7 @@ admin.autodiscover()
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     path('spider/', include('spider.urls')),
+    path('api/v1/', include('api.urls')),
     path('admin/', admin.site.urls)
 
 ]

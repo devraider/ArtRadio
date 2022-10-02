@@ -17,13 +17,13 @@ class TrackModel(models.Model):
 class SpotifyModel(models.Model):
     spotify_id = models.ForeignKey(TrackModel, on_delete=models.CASCADE)
     # list of artists
-    spotify_song_artists = models.TextField(null=True)
-    spotify_song_id = models.CharField(max_length=50)
+    spotify_song_artists = models.TextField(null=True, blank=True)
+    spotify_song_id = models.CharField(max_length=50, blank=True)
     # fields with URL value
-    spotify_song_api = models.CharField(max_length=400)
-    spotify_song_external_urls = models.CharField(max_length=400)
-    spotify_song_preview = models.CharField(max_length=400, null=True)
-    spotify_song_thumbnail = models.CharField(max_length=400)
+    spotify_song_api = models.CharField(max_length=400, blank=True)
+    spotify_song_external_urls = models.CharField(max_length=400, blank=True)
+    spotify_song_preview = models.CharField(max_length=400, null=True, blank=True)
+    spotify_song_thumbnail = models.CharField(max_length=400, blank=True)
     spotify_date = models.DateField(auto_now=True)
     updated_date = models.DateField(auto_now_add=datetime.now)
 
