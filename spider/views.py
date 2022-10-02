@@ -6,6 +6,8 @@ from rest_framework.response import Response
 from .serializers import UserSerializer
 from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify
 from .models import TrackModel, SpotifyModel
+from django.conf import settings
+from datetime import datetime
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -18,25 +20,30 @@ class UserViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-def spider_welcome(request):
+def spider_welcome(request) -> Response:
     return Response("Welcome on ArtRadio Spider")
 
 
 @api_view(['GET'])
-def spider_radio(request):
+def spider_radio(request) -> Response:
+    return Response(handler_spider_radio())
+
+
+def handler_spider_radio() -> dict:
+    """
+    Just a function to keep steps for Spider to parse radio save and search track on Spotify.
+    Used to be triggerd from AP Scheduler and View function.
+    """
     t = TrackExtractorImpuls(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     spotify_details = StreamMediaSpotify().find_track(details.radio_name)
+    model_track, created_track = TrackModel.objects.update_or_create(**details.__dict__)
     if not spotify_details.get("spotify_song_id"):
-        return Response(spotify_details)
-    # Save track details in Database
-    track_details_model = TrackModel(**details.__dict__)
-    track_details_model.save()
+        return spotify_details
     # Add track details models as spotify Id to be added in database as Foreign Key
-    spotify_details["spotify_id"] = track_details_model
+    spotify_details["spotify_id"] = model_track
     # Save spotify details in Database
-    spotify_model = SpotifyModel(**spotify_details)
-    spotify_model.save()
+    SpotifyModel.objects.update_or_create(**spotify_details)
     # Delete spotify id because it was used only to for Database purpose
     del spotify_details["spotify_id"]
-    return Response(spotify_details)
+    return spotify_details
