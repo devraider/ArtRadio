@@ -35,6 +35,7 @@ def spider_radio(request) -> Response:
 def yt_spider_search(request):
     # Youtube search by params or get a bell sound
     yt_search = StreamMediaYoutube().find_track(request.query_params.get("query", "kZ0M8hgRQag"))
+    logger.debug(f"Searched: {yt_search=}")
     return Response(yt_search)
 
 
@@ -64,6 +65,7 @@ def handler_spider_radio() -> dict:
     t = TrackExtractorImpuls(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     # Insert track in database
-    TrackModel.objects.update_or_create(**details.__dict__)
+    model, created = TrackModel.objects.update_or_create(**details.__dict__)
+    logger.debug(f"TrackModel {model} was {created=}")
     return {k: str(v) for k, v in details.__dict__.items()}
 
