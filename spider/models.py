@@ -4,10 +4,10 @@ from datetime import datetime
 
 class TrackModel(models.Model):
     track_id = models.AutoField(primary_key=True)
-    radio_name = models.CharField(max_length=50)
-    track_source = models.CharField(max_length=50)
-    track_singer = models.CharField(max_length=50)
-    track_name = models.CharField(max_length=50)
+    radio_name = models.CharField(max_length=244)
+    track_source = models.CharField(max_length=244)
+    track_singer = models.CharField(max_length=244)
+    track_name = models.CharField(max_length=244)
     track_date = models.DateTimeField(auto_now_add=datetime.now, editable=True)
     track_date_updated = models.DateTimeField(auto_now_add=datetime.now, editable=True)
 
