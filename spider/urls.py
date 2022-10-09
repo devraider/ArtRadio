@@ -3,5 +3,7 @@ from . import views
 
 urlpatterns = [
     path('wlc', views.spider_welcome, name="welcome_spider"),
-    path('impuls', views.spider_radio, name="spider_radio")
+    path('impuls', views.spider_radio, name="spider_radio"),
+    path('yt_search', views.yt_spider_search, name="yt_spider_search")
+
 ]

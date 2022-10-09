@@ -8,7 +8,8 @@ class TrackModel(models.Model):
     track_source = models.CharField(max_length=50)
     track_singer = models.CharField(max_length=50)
     track_name = models.CharField(max_length=50)
-    track_date = models.DateField()
+    track_date = models.DateTimeField(auto_now_add=datetime.now, editable=True)
+    track_date_updated = models.DateTimeField(auto_now_add=datetime.now, editable=True)
 
     def __repr__(self):
         return self.track_id

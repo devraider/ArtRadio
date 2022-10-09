@@ -1,10 +1,12 @@
 import os
 from typing import Dict, Protocol, Union, List
 
+
 import requests
 from dataclasses import dataclass, field
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
+from pytube import Search as PytubeSearch
 from enum import Enum, auto
 from time import time
 from datetime import datetime
@@ -27,12 +29,11 @@ class TrackDetails:
     track_source: TrackSources
     track_singer: str = field(init=False)
     track_name: str = field(init=False)
-    track_date: datetime
 
     def __post_init__(self) -> None:
         """ Get singer and track name from radio stream name """
         try:
-            self.track_singer, self.track_name = self.radio_name.split('-')
+            self.track_singer, self.track_name = [name.strip() for name in self.radio_name.split('-')]
         except ValueError:
             self.track_singer = ""
             self.track_name = ""
@@ -52,8 +53,7 @@ class TrackExtractorImpuls(TrackExtractor):
         result = self._do_request().json()
         return {
             "radio_name": self._extract_track(result),
-            "track_source": self.source,
-            "track_date": datetime.now()
+            "track_source": self.source
 
         }
 
@@ -124,5 +124,46 @@ class StreamMediaSpotify:
         return {
             "spotify_song_thumbnail": thumbnail.get("url")
         }
+
+
+class StreamMediaYoutube:
+    def __init__(self):
+        self.yt_search = None
+        self.stream = None
+        self.yt_song_obj = None
+
+    def find_track(self, track_name: str):
+        """ Get/ Find track details from YouTube """
+        self.yt_search = PytubeSearch(track_name)
+        # Get all results for given track_name
+        yt_results = self.yt_search.results
+        # Get only first result
+        # TODO: Use Levenshtein algorithm to match perfect track
+        self.yt_song_obj = yt_results[0]
+
+        # Build track details
+        track_details = dict()
+        track_details['yt_date'] = datetime.now()
+        track_details.update(**self.__find_song(), **self.__find_artist(), **self.__find_song_thumbnail())
+        return track_details
+
+    def __find_song(self) -> Dict[str, str]:
+        logger.debug(f"Loading song: {self.yt_song_obj.streams.get_audio_only('mp4')}")
+        return {
+            "yt_song_id": self.yt_song_obj.video_id,
+            "yt_song_mp4": self.yt_song_obj.streams.get_audio_only("mp4").url
+        }
+
+    def __find_artist(self) -> Dict[str, str]:
+        logger.debug(f"Loading artist details: {self.yt_song_obj.title}")
+        artists = self.yt_song_obj.title
+        if '-' in self.yt_song_obj.title:
+            artists = self.yt_song_obj.title.split("-")[0]
+        return {"yt_song_artists": artists}
+
+    def __find_song_thumbnail(self) -> Dict[str, str]:
+        logger.debug(f"Loading thumbnail details: {self.yt_song_obj.thumbnail_url}")
+        return {"yt_song_thumbnail": self.yt_song_obj.thumbnail_url}
+
 
 
