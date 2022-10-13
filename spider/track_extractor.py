@@ -12,8 +12,9 @@ from time import time
 from datetime import datetime
 import logging
 
-# Instanciate logger because can not import logger from view
+# Instantiate logger because can not import logger from view
 logger = logging.getLogger('spider.views')
+
 
 class TrackSources(Enum):
     """ Radio sources """
