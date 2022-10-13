@@ -5,8 +5,8 @@ from datetime import datetime
 # Create your models here.
 class HomeScreenModel(models.Model):
     label_id = models.AutoField(primary_key=True)
-    label_name = models.AutoField(max_length=32)
-    label_anchor = models.AutoField(max_length=32)
+    label_name = models.CharField(max_length=32)
+    label_anchor = models.CharField(max_length=32)
     label_active = models.BooleanField(default=False)
     label_date = models.DateTimeField(auto_now_add=datetime.now, editable=True)
 
