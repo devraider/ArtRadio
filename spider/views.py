@@ -33,10 +33,18 @@ def spider_radio(request) -> Response:
 
 @api_view(["GET", "POST"])
 def yt_spider_search(request):
-    # Youtube search by params or get a bell sound
-    yt_search = StreamMediaYoutube().find_track(request.query_params.get("query", "kZ0M8hgRQag"))
-    logger.debug(f"Searched: {yt_search=}")
-    return Response(yt_search)
+    # YouTube search by params or get a bell sound
+    songs_result = list()
+    if request.POST:
+        query_songs = request.body.get("querySongs")
+        if query_songs:
+            for song in query_songs:
+                songs_result.append(StreamMediaYoutube().find_track(song))
+    elif request.GET:
+        yt_search = StreamMediaYoutube().find_track(request.query_params.get("query", "kZ0M8hgRQag"))
+        songs_result.append(yt_search)
+    logger.debug(f"Searched: {songs_result}")
+    return Response(songs_result)
 
 
 def spotify_handler_spider_radio() -> dict:
@@ -65,7 +73,7 @@ def handler_spider_radio() -> dict:
     t = TrackExtractorImpuls(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     # Insert track in database
-    model, created = TrackModel.objects.update_or_create(**details.__dict__)
+    model, created = TrackModel.objects.get_or_create(**details.__dict__)
     logger.debug(f"TrackModel {model} was {created=}")
     return {k: str(v) for k, v in details.__dict__.items()}
 
