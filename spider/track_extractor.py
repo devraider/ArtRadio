@@ -34,10 +34,10 @@ class TrackDetails:
     def __post_init__(self) -> None:
         """ Get singer and track name from radio stream name """
         try:
-            self.track_singer, self.track_name = [name.strip() for name in self.radio_name.split('-', 1)]
+            self.track_singer, self.track_name = [name.strip() for name in self.radio_name.split(' - ', 1)]
         except ValueError:
-            self.track_singer = ""
-            self.track_name = ""
+            self.track_singer = "None"
+            self.track_name = self.radio_name
 
 
 class TrackExtractor(Protocol):
