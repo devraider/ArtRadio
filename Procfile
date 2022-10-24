@@ -1,1 +1,1 @@
-web: gunicorn artradio:application --log-file -
+web: gunicorn artradio.wsgi --log-file -
