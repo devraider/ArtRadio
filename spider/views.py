@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import permissions
@@ -7,6 +9,7 @@ from .serializers import UserSerializer
 from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify, StreamMediaYoutube
 from .models import TrackModel, SpotifyModel
 import logging
+from django.core.exceptions import ObjectDoesNotExist
 
 # Instantiate logger with file name
 logger = logging.getLogger(__name__)
@@ -73,7 +76,15 @@ def handler_spider_radio() -> dict:
     t = TrackExtractorImpuls(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     # Insert track in database
-    model, created = TrackModel.objects.get_or_create(**details.__dict__)
-    logger.debug(f"TrackModel {model} was {created=}")
+    try:
+        if model := TrackModel.objects.filter(radio_name=details.radio_name):
+            model.update(track_date_updated=datetime.now())
+        else:
+            TrackModel(**details.__dict__).save()
+
+        print("1")
+    except ObjectDoesNotExist:
+        TrackModel(**details.__dict__).save()
+    logger.debug(f"TrackModel was added")
     return {k: str(v) for k, v in details.__dict__.items()}
 

@@ -135,7 +135,7 @@ class StreamMediaYoutube:
 
     def find_track(self, track_name: str):
         """ Get/ Find track details from YouTube """
-        self.yt_search = PytubeSearch(track_name)
+        self.__filter_search(track_name)
         # Get all results for given track_name
         yt_results = self.yt_search.results
         # Get only first result
@@ -147,6 +147,17 @@ class StreamMediaYoutube:
         track_details['yt_date'] = datetime.now()
         track_details.update(**self.__find_song(), **self.__find_artist(), **self.__find_song_thumbnail())
         return track_details
+
+    def __filter_search(self, track_name: str, yt_retries=3):
+        """
+        Sometimes YT response is : The following content it's not available on this app.
+        In this case we need to retry Search
+        """
+        for yt_retried in range(yt_retries):
+            self.yt_search = PytubeSearch(track_name)
+            thumbnail = self.yt_search .results[0].thumbnail_url
+            if "hqdefault.jpg" not in thumbnail:
+                break
 
     def __find_song(self) -> Dict[str, str]:
         logger.debug(f"Loading song: {self.yt_song_obj.streams.get_audio_only('mp4')}")

@@ -1,6 +1,6 @@
 from django.db import models
 from datetime import datetime
-
+from django.utils import timezone
 
 class TrackModel(models.Model):
     track_id = models.AutoField(primary_key=True)
@@ -8,8 +8,8 @@ class TrackModel(models.Model):
     track_source = models.CharField(max_length=244)
     track_singer = models.CharField(max_length=244)
     track_name = models.CharField(max_length=244)
-    track_date = models.DateTimeField(auto_now_add=datetime.now, editable=True)
-    track_date_updated = models.DateTimeField(auto_now_add=datetime.now, editable=True)
+    track_date = models.DateTimeField(auto_now=True, editable=True)
+    track_date_updated = models.DateTimeField(default=timezone.now, editable=True)
 
     def __repr__(self):
         return self.track_id

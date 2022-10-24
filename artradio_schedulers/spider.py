@@ -17,6 +17,6 @@ def run_spider_scheduler(callable_job: Callable[[dict], Response]) -> None:
     trigger = spider_scheduler()
     scheduler = BackgroundScheduler()
     scheduler.add_job(callable_job, trigger=trigger)
-    # scheduler.start()
+    scheduler.start()
 
 
