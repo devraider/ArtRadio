@@ -1,1 +1,1 @@
-web: gunicorn artradio:application --log-file -  --noreload
+web: gunicorn artradio:application --log-file -
