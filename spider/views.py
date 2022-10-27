@@ -10,6 +10,7 @@ from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, S
 from .models import TrackModel, SpotifyModel
 import logging
 from django.core.exceptions import ObjectDoesNotExist
+import requests
 
 # Instantiate logger with file name
 logger = logging.getLogger(__name__)
