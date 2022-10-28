@@ -50,19 +50,6 @@ def yt_spider_search(request):
     logger.debug(f"Searched: {songs_result}")
     return Response(songs_result)
 
-@api_view(["GET", "POST"])
-def yt_download(request):
-    # YouTube search by params or get a bell sound
-    songs_result = list()
-    if request.GET:
-        yt_search = request.query_params.get("url", None)
-        content = requests.get(yt_search)
-
-    logger.debug(f"Download: {songs_result}")
-    response = Response(content.content)
-    response.headers.update(**content.headers)
-    return response
-
 
 def spotify_handler_spider_radio() -> dict:
     """
@@ -101,3 +88,4 @@ def handler_spider_radio() -> dict:
         TrackModel(**details.__dict__).save()
     logger.debug(f"TrackModel was added")
     return {k: str(v) for k, v in details.__dict__.items()}
+
