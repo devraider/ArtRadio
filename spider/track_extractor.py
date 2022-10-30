@@ -178,10 +178,10 @@ class StreamMediaYoutube:
 
     @staticmethod
     def download_song(song_obj: YouTube):
-        if os.path.exists("./staticfiles/songs"):
-            for file in os.listdir("./staticfiles/songs"):
+        if os.path.exists("./staticfiles/songs/"):
+            for file in os.listdir("./staticfiles/songs/"):
                 os.remove(file)
-        song_obj.streams.get_audio_only("mp4").download(filename="local_track.mp4",
+        song_obj.streams.get_audio_only("mp4").download(filename=f"local_track_{song_obj.video_id}.mp4",
                                                         output_path="./staticfiles/songs/")
 
     @staticmethod
