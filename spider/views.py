@@ -54,7 +54,7 @@ def yt_spider_search(request):
 
 def your_view_function(request):
     mp3 = request.query_params.get("query", "kZ0M8hgRQag")
-    file = open(, "rb").read()
+    file = open("", "rb").read()
     # response['Content-Disposition'] = 'attachment; filename=filename.mp3'
     return HttpResponse(file, mimetype="audio/mpeg")
 
