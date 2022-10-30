@@ -138,7 +138,7 @@ class StreamMediaYoutube:
     def find_track(self, track_name: str) -> Union[Dict[None, None], Dict[str, Union[str, datetime.now]]]:
         """ Get/ Find track details from YouTube """
         # Add lyrics str to prevent VEVO(license) video to stream
-        self.track_name = f"{track_name} (lyrics)"
+        self.track_name = track_name
         self.search_song()
         self.yt_song_obj = self.__filter_search()
         if not self.yt_song_obj:
@@ -156,8 +156,9 @@ class StreamMediaYoutube:
 
     def __levenshtein_order_songs(self) -> fuzzy_process.extract:
         """ Order songs based Levenshtein Algorithm """
+        track_name_lyrics = f"{self.track_name} (lyrics)"
         songs_dict = {i: song.title for i, song in enumerate(self.yt_search.results)}
-        return fuzzy_process.extract(self.track_name, songs_dict)[:3]  # return only first 3 elements
+        return fuzzy_process.extract(track_name_lyrics, songs_dict)[:3]  # return only first 3 elements
 
     def __filter_search(self) -> Union[YouTube, None]:
         """
