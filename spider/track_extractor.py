@@ -178,11 +178,12 @@ class StreamMediaYoutube:
 
     @staticmethod
     def download_song(song_obj: YouTube):
-        if os.path.exists("./staticfiles/songs/"):
-            for file in os.listdir("./staticfiles/songs/"):
-                os.remove(file)
+        static = "./staticfiles/songs/"
+        if os.path.exists(static):
+            for file in os.listdir(static):
+                os.remove(os.path.join(static, file))
         song_obj.streams.get_audio_only("mp4").download(filename=f"local_track_{song_obj.video_id}.mp4",
-                                                        output_path="./staticfiles/songs/")
+                                                        output_path=static)
 
     @staticmethod
     def __check_thumbnail(thumbnail_url: str, yt_retries: int = 3) -> bool:
