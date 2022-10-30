@@ -178,7 +178,7 @@ class StreamMediaYoutube:
     @staticmethod
     def download_song(song_obj: YouTube):
         song_obj.streams.get_audio_only("mp4").download(filename="local_track.mp4",
-                                                        output_path="../staticfiles/songs/")
+                                                        output_path="./staticfiles/songs/")
 
     @staticmethod
     def __check_thumbnail(thumbnail_url: str, yt_retries: int = 3) -> bool:
