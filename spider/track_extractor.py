@@ -177,6 +177,7 @@ class StreamMediaYoutube:
 
     @staticmethod
     def download_song(song_obj: YouTube):
+        os.remove("./staticfiles/songs/*")
         song_obj.streams.get_audio_only("mp4").download(filename="local_track.mp4",
                                                         output_path="./staticfiles/songs/")
 
@@ -202,7 +203,8 @@ class StreamMediaYoutube:
         return {
             "yt_song_id": self.yt_song_obj.video_id,
             "yt_song_mp4": self.yt_song_obj.streams.get_audio_only("mp4").url,
-            "local_track_url": "https://artradio-backend.herokuapp.com/static/songs/local_track.mp4"
+            "local_track_url": f"https://artradio-backend.herokuapp.com/static/songs/local_track_"
+                               f"{self.yt_song_obj.video_id}.mp4"
         }
 
 
