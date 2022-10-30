@@ -171,8 +171,13 @@ class StreamMediaYoutube:
             check_mp3_status = self.__check_mp3_status(chosen_song.streams.get_audio_only("mp4").url)
             check_thumbnail = self.__check_thumbnail(chosen_song.thumbnail_url)
             if all([check_thumbnail, check_mp3_status]):
+                self.download_song()
                 return chosen_song
         return None
+
+    def download_song(self):
+        self.yt_song_obj.streams.get_audio_only("mp4").download(filename="local_track.mp4",
+                                                                output_path="../staticfiles/songs/")
 
     @staticmethod
     def __check_thumbnail(thumbnail_url: str, yt_retries: int = 3) -> bool:
