@@ -12,6 +12,7 @@ from time import time
 from datetime import datetime
 import logging
 from fuzzywuzzy import process as fuzzy_process
+import glob
 
 # Instantiate logger because can not import logger from view
 logger = logging.getLogger('spider.views')
@@ -178,7 +179,8 @@ class StreamMediaYoutube:
     @staticmethod
     def download_song(song_obj: YouTube):
         if os.path.exists("./staticfiles/songs"):
-            os.remove("./staticfiles/songs/*")
+            files = glob.glob('/staticfiles/songs/*')
+            os.remove(files)
         song_obj.streams.get_audio_only("mp4").download(filename="local_track.mp4",
                                                         output_path="./staticfiles/songs/")
 
