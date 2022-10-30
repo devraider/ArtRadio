@@ -205,6 +205,7 @@ class StreamMediaYoutube:
             "local_track_url": "https://artradio-backend.herokuapp.com/static/songs/local_track.mp4"
         }
 
+
     def __find_artist_and_song(self) -> Dict[str, str]:
         logger.debug(f"Loading artist details: {self.yt_song_obj.title}")
         artists = song_name = self.yt_song_obj.title
