@@ -6,11 +6,12 @@ import requests
 from dataclasses import dataclass, field
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
-from pytube import Search as PytubeSearch
+from pytube import Search as PytubeSearch, YouTube
 from enum import Enum, auto
 from time import time
 from datetime import datetime
 import logging
+from fuzzywuzzy import process as fuzzy_process
 
 # Instantiate logger because can not import logger from view
 logger = logging.getLogger('spider.views')
@@ -132,32 +133,62 @@ class StreamMediaYoutube:
         self.yt_search = None
         self.stream = None
         self.yt_song_obj = None
+        self.track_name = None
 
-    def find_track(self, track_name: str):
+    def find_track(self, track_name: str) -> Union[Dict[None, None], Dict[str, Union[str, datetime.now]]]:
         """ Get/ Find track details from YouTube """
-        self.__filter_search(track_name)
-        # Get all results for given track_name
-        yt_results = self.yt_search.results
-        # Get only first result
-        # TODO: Use Levenshtein algorithm to match perfect track
-        self.yt_song_obj = yt_results[0]
-
+        # Add lyrics str to prevent VEVO(license) video to stream
+        self.track_name = f"{track_name} (lyrics)"
+        self.search_song()
+        self.yt_song_obj = self.__filter_search()
+        if not self.yt_song_obj:
+            return {}
         # Build track details
         track_details = dict()
         track_details['yt_date'] = datetime.now()
-        track_details.update(**self.__find_song(), **self.__find_artist(), **self.__find_song_thumbnail())
+        track_details.update(**self.__find_song(), **self.__find_artist_and_song(), **self.__find_song_thumbnail())
         return track_details
 
-    def __filter_search(self, track_name: str, yt_retries=3):
+    def search_song(self):
+        """ Search song on YouTube based on track name """
+        # Prevent search of VEVO video to pass video license
+        self.yt_search = PytubeSearch(self.track_name)
+
+    def __levenshtein_order_songs(self) -> fuzzy_process.extract:
+        """ Order songs based Levenshtein Algorithm """
+        songs_dict = {i: song.title for i, song in enumerate(self.yt_search.results)}
+        return fuzzy_process.extract(self.track_name, songs_dict)[:3]  # return only first 3 elements
+
+    def __filter_search(self) -> Union[YouTube, None]:
         """
         Sometimes YT response is : The following content it's not available on this app.
         In this case we need to retry Search
         """
+        levenshtein_list = self.__levenshtein_order_songs()
+        for title, score, _index in levenshtein_list:
+            chosen_song = self.yt_search.results[_index]
+            check_mp3_status = self.__check_mp3_status(chosen_song.streams.get_audio_only("mp4").url)
+            check_thumbnail = self.__check_thumbnail(chosen_song.thumbnail_url)
+            if all([check_thumbnail, check_mp3_status]):
+                return chosen_song
+        return None
+
+    @staticmethod
+    def __check_thumbnail(thumbnail_url: str, yt_retries: int = 3) -> bool:
         for yt_retried in range(yt_retries):
-            self.yt_search = PytubeSearch(track_name)
-            thumbnail = self.yt_search .results[0].thumbnail_url
-            if "hqdefault.jpg" not in thumbnail:
-                break
+            if "hqdefault.jpg" not in thumbnail_url:
+                return True
+        return False
+
+    @staticmethod
+    def __check_mp3_status(mp3_url: str) -> bool:
+        try:
+            if r_status := requests.head(mp3_url).status_code == 200:
+                return True
+            logger.debug(f"Mp3 status is: {r_status}")
+        except Exception as e:
+            logger.debug(f"Mp3 check got exception {e}")
+        return False
 
     def __find_song(self) -> Dict[str, str]:
         logger.debug(f"Loading song: {self.yt_song_obj.streams.get_audio_only('mp4')}")
@@ -166,12 +197,15 @@ class StreamMediaYoutube:
             "yt_song_mp4": self.yt_song_obj.streams.get_audio_only("mp4").url
         }
 
-    def __find_artist(self) -> Dict[str, str]:
+    def __find_artist_and_song(self) -> Dict[str, str]:
         logger.debug(f"Loading artist details: {self.yt_song_obj.title}")
-        artists = self.yt_song_obj.title
+        artists = song_name = self.yt_song_obj.title
         if '-' in self.yt_song_obj.title:
-            artists = self.yt_song_obj.title.split("-")[0]
-        return {"yt_song_artists": artists}
+            artists, song_name = self.yt_song_obj.title.split(" - ", 1)
+
+        return {"yt_song_artists": artists.strip(),
+                "yt_song_name": song_name.strip(),
+                "yt_song_title": self.yt_song_obj.title}
 
     def __find_song_thumbnail(self) -> Dict[str, str]:
         logger.debug(f"Loading thumbnail details: {self.yt_song_obj.thumbnail_url}")
