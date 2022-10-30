@@ -156,7 +156,7 @@ class StreamMediaYoutube:
 
     def __levenshtein_order_songs(self) -> fuzzy_process.extract:
         """ Order songs based Levenshtein Algorithm """
-        track_name_lyrics = f"{self.track_name} (lyrics)"
+        track_name_lyrics = f"{self.track_name} official"
         songs_dict = {i: song.title for i, song in enumerate(self.yt_search.results)}
         return fuzzy_process.extract(track_name_lyrics, songs_dict)[:3]  # return only first 3 elements
 
