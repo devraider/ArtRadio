@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.models import User
+from django.http import HttpResponse
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework.decorators import api_view
@@ -50,6 +51,12 @@ def yt_spider_search(request):
     logger.debug(f"Searched: {songs_result}")
     return Response(songs_result)
 
+
+def your_view_function(request):
+    mp3 = request.query_params.get("query", "kZ0M8hgRQag")
+    file = open(, "rb").read()
+    # response['Content-Disposition'] = 'attachment; filename=filename.mp3'
+    return HttpResponse(file, mimetype="audio/mpeg")
 
 def spotify_handler_spider_radio() -> dict:
     """
