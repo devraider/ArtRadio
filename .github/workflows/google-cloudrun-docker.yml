@@ -10,7 +10,6 @@ env:
   DJANGO_SECRET = ${{ env.DJANGO_SECRET }}
   DEBUG = ${{ env.DEBUG }}
   ALLOWED_HOSTS = ${{ env.ALLOWED_HOSTS }}
-  # DATABASE
   PSQ_NAME = ${{ env.PSQ_NAME }}
   PSQ_PASS = ${{ env.PSQ_PASS }}
   PSQ_USER = ${{ env.PSQ_USER }}
