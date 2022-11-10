@@ -4,19 +4,18 @@ on:
     branches:
       - main
 env:
-SPOTIFY_ID = ${{ env.SPOTIFY_ID }}
-SPOTIFY_SECRET = ${{ env.SPOTIFY_SECRET }}
-SPOTIFY_URI = ${{ env.SPOTIFY_URI }}
-DJANGO_SECRET = ${{ env.DJANGO_SECRET }}
-DEBUG = ${{ env.DEBUG }}
-ALLOWED_HOSTS = ${{ env.ALLOWED_HOSTS }}
-
-# DATABASE
-PSQ_NAME = ${{ env.PSQ_NAME }}
-PSQ_PASS = ${{ env.PSQ_PASS }}
-PSQ_USER = ${{ env.PSQ_USER }}
-PSQ_PORT = ${{ env.PSQ_PORT }}
-PSQ_HOST = ${{ env.PSQ_HOST }}
+  SPOTIFY_ID = ${{ env.SPOTIFY_ID }}
+  SPOTIFY_SECRET = ${{ env.SPOTIFY_SECRET }}
+  SPOTIFY_URI = ${{ env.SPOTIFY_URI }}
+  DJANGO_SECRET = ${{ env.DJANGO_SECRET }}
+  DEBUG = ${{ env.DEBUG }}
+  ALLOWED_HOSTS = ${{ env.ALLOWED_HOSTS }}
+  # DATABASE
+  PSQ_NAME = ${{ env.PSQ_NAME }}
+  PSQ_PASS = ${{ env.PSQ_PASS }}
+  PSQ_USER = ${{ env.PSQ_USER }}
+  PSQ_PORT = ${{ env.PSQ_PORT }}
+  PSQ_HOST = ${{ env.PSQ_HOST }}
 
 
 jobs:
