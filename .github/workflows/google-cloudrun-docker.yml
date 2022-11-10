@@ -1,0 +1,52 @@
+name: Deploy ArtRadio deploy to Cloud Run
+on:
+  push:
+    branches:
+      - main
+env:
+SPOTIFY_ID = ${{ env.SPOTIFY_ID }}
+SPOTIFY_SECRET = ${{ env.SPOTIFY_SECRET }}
+SPOTIFY_URI = ${{ env.SPOTIFY_URI }}
+DJANGO_SECRET = ${{ env.DJANGO_SECRET }}
+DEBUG = ${{ env.DEBUG }}
+ALLOWED_HOSTS = ${{ env.ALLOWED_HOSTS }}
+
+# DATABASE
+PSQ_NAME = ${{ env.PSQ_NAME }}
+PSQ_PASS = ${{ env.PSQ_PASS }}
+PSQ_USER = ${{ env.PSQ_USER }}
+PSQ_PORT = ${{ env.PSQ_PORT }}
+PSQ_HOST = ${{ env.PSQ_HOST }}
+
+
+jobs:
+  deploy:
+    name: Deploying 🚀 Clima
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      # Build and push image to Google Container Registry
+      - name: Setting up
+        uses: google-github-actions/setup-gcloud@master
+        with:
+          version: '286.0.0'
+          service_account_key: ${{ secrets.GCP_SA_KEY_JSON }}
+          service_account_email: ${{ secrets.IAM_SERVICE_ACCOUNT_EMAIL }}
+          project_id:  ${{ secrets.YOUR_PROJECT_ID }}
+
+      - name: Building (🏗)
+        run: |-
+          gcloud builds submit \
+            --tag gcr.io/${{ secrets.YOUR_PROJECT_ID }}/${{ secrets.SERVICE_ID }}
+
+      # Setup gcloud CLI
+      - name: Deploy (🚀)
+        uses: google-github-actions/deploy-cloudrun@main
+        with:
+          service: SERVICE_ID
+          image: gcr.io/${{ secrets.YOUR_PROJECT_ID }}/${{ secrets.SERVICE_ID }}
+          region: ${{ secrets.REGION }}
+          credentials: ${{ secrets.GCP_SA_KEY_JSON }}
+          project_id: ${{ secrets.YOUR_PROJECT_ID }}
