@@ -1,0 +1,5 @@
+Spider Scheduler:
+  Cron:
+    day_of_week: mon-sun
+    hour: 9-22
+    second: 2
