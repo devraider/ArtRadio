@@ -90,16 +90,16 @@ jobs:
           # NOTE: If required, update to the appropriate source folder
           source: ./
           env_vars:
-            ALLOWED_HOSTS='${{ secrets.ALLOWED_HOSTS }}'
-            DEBUG='${{ secrets.DEBUG }}'
-            SPOTIFY_ID='${{ secrets.SPOTIFY_ID }}'
-            SPOTIFY_SECRET='${{ secrets.SPOTIFY_SECRET }}'
-            SPOTIFY_URI='${{ secrets.SPOTIFY_URI }}'
-            DJANGO_SECRET='${{ secrets.DJANGO_SECRET }}'
-            PSQ_NAME='${{ secrets.PSQ_NAME }}'
-            PSQ_PASS='${{ secrets.PSQ_PASS }}'
-            PSQ_USER='${{ secrets.PSQ_USER }}'
-            PSQ_PORT='${{ secrets.PSQ_PORT }}'
+            ALLOWED_HOSTS='${{ secrets.ALLOWED_HOSTS }}',
+            DEBUG='${{ secrets.DEBUG }}',
+            SPOTIFY_ID='${{ secrets.SPOTIFY_ID }}',
+            SPOTIFY_SECRET='${{ secrets.SPOTIFY_SECRET }}',
+            SPOTIFY_URI='${{ secrets.SPOTIFY_URI }}',
+            DJANGO_SECRET='${{ secrets.DJANGO_SECRET }}',
+            PSQ_NAME='${{ secrets.PSQ_NAME }}',
+            PSQ_PASS='${{ secrets.PSQ_PASS }}',
+            PSQ_USER='${{ secrets.PSQ_USER }}',
+            PSQ_PORT='${{ secrets.PSQ_PORT }}',
             PSQ_HOST='${{ secrets.PSQ_HOST }}'
 
 
