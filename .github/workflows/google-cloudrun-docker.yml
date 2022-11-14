@@ -90,8 +90,8 @@ jobs:
           # NOTE: If required, update to the appropriate source folder
           source: ./
           env_vars:
-            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }},
             DEBUG=${{ secrets.DEBUG }},
+            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }},
             SPOTIFY_ID=${{ secrets.SPOTIFY_ID }},
             SPOTIFY_SECRET=${{ secrets.SPOTIFY_SECRET }},
             SPOTIFY_URI=${{ secrets.SPOTIFY_URI }},
