@@ -54,6 +54,17 @@ env:
   PROJECT_ID: '${{ secrets.YOUR_PROJECT_ID }}' # TODO: update Google Cloud project id
   SERVICE: '${{ secrets.IAM_SERVICE_ACCOUNT_EMAIL }}' # TODO: update Cloud Run service name
   REGION: 'europe-west1' # TODO: update Cloud Run service region
+  DEBUG: '${{ secrets.DEBUG }}'
+  ALLOWED_HOSTS: '${{ secrets.ALLOWED_HOSTS }}'
+  SPOTIFY_ID: '${{ secrets.SPOTIFY_ID }}'
+  SPOTIFY_SECRET: '${{ secrets.SPOTIFY_SECRET }}'
+  SPOTIFY_URI: '${{ secrets.SPOTIFY_URI }}'
+  DJANGO_SECRET: '${{ secrets.DJANGO_SECRET }}'
+  PSQ_NAME: '${{ secrets.PSQ_NAME }}'
+  PSQ_PASS: '${{ secrets.PSQ_PASS }}'
+  PSQ_USER: '${{ secrets.PSQ_USER }}'
+  PSQ_PORT: '${{ secrets.PSQ_PORT }}'
+  PSQ_HOST: '${{ secrets.PSQ_HOST }}'
 
 jobs:
   deploy:
@@ -89,18 +100,18 @@ jobs:
           region: ${{ env.REGION }}
           # NOTE: If required, update to the appropriate source folder
           source: ./
-          env_vars:
-            DEBUG=${{ secrets.DEBUG }},
-            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }},
-            SPOTIFY_ID=${{ secrets.SPOTIFY_ID }},
-            SPOTIFY_SECRET=${{ secrets.SPOTIFY_SECRET }},
-            SPOTIFY_URI=${{ secrets.SPOTIFY_URI }},
-            DJANGO_SECRET=${{ secrets.DJANGO_SECRET }},
-            PSQ_NAME=${{ secrets.PSQ_NAME }},
-            PSQ_PASS=${{ secrets.PSQ_PASS }},
-            PSQ_USER=${{ secrets.PSQ_USER }},
-            PSQ_PORT=${{ secrets.PSQ_PORT }},
-            PSQ_HOST=${{ secrets.PSQ_HOST }}
+#          env_vars:
+#            DEBUG=${{ secrets.DEBUG }},
+#            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }},
+#            SPOTIFY_ID=${{ secrets.SPOTIFY_ID }},
+#            SPOTIFY_SECRET=${{ secrets.SPOTIFY_SECRET }},
+#            SPOTIFY_URI=${{ secrets.SPOTIFY_URI }},
+#            DJANGO_SECRET=${{ secrets.DJANGO_SECRET }},
+#            PSQ_NAME=${{ secrets.PSQ_NAME }},
+#            PSQ_PASS=${{ secrets.PSQ_PASS }},
+#            PSQ_USER=${{ secrets.PSQ_USER }},
+#            PSQ_PORT=${{ secrets.PSQ_PORT }},
+#            PSQ_HOST=${{ secrets.PSQ_HOST }}
 
 
       # If required, use the Cloud Run url output in later steps
