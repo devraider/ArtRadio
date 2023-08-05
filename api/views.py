@@ -18,7 +18,7 @@ def get_spotify_songs(requests) -> Response:
 @api_view(['GET'])
 def get_tracks(request) -> Response:
     """ Get a list with all tracks from radio"""
-    tracks_obj = TrackModel.objects.all().order_by("-track_id")
+    tracks_obj = TrackModel.objects.all().order_by("-track_date_updated")
     tracks_serializer = TrackModelSerializer(tracks_obj, many=True)
     return Response(tracks_serializer.data)
 

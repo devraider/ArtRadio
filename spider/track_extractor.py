@@ -1,6 +1,5 @@
 import os
-from typing import Dict, Protocol, Union, List
-
+from typing import Dict, Protocol, Union, List, Callable, Type
 
 import requests
 from dataclasses import dataclass, field
@@ -12,10 +11,20 @@ from time import time
 from datetime import datetime
 import logging
 from fuzzywuzzy import process as fuzzy_process
-import glob
+from youtube_search import YoutubeSearch
 
 # Instantiate logger because can not import logger from view
 logger = logging.getLogger('spider.views')
+
+# Custom Types
+SEARCH_ENGINE = Type[Union[PytubeSearch, YoutubeSearch]]
+
+
+# Custom Exceptions
+class RadioRequestFailed(Exception):
+    def __init__(self, message, errors):
+        super().__init__(message)
+        self.errors = errors
 
 
 class TrackSources(Enum):
@@ -30,8 +39,9 @@ class TrackDetails:
     """ Dataclass with track info and source """
     radio_name: str
     track_source: TrackSources
-    track_singer: str = field(init=False)
-    track_name: str = field(init=False)
+    track_singer: str = field(default_factory=str)
+    track_yt_id: str = field(default_factory=str)
+    track_name: str = field(default_factory=str)
 
     def __post_init__(self) -> None:
         """ Get singer and track name from radio stream name """
@@ -53,9 +63,10 @@ class TrackExtractorImpuls(TrackExtractor):
         self.source = source
 
     def get_track(self) -> Dict[str, Union[str, time]]:
-        result = self._do_request().json()
+        """ Extract track from Impuls JSON """
+        # result = self._do_request().json()
         return {
-            "radio_name": self._extract_track(result),
+            "radio_name": "Nicole Cherry x Tata Vlad - Fum si scrum",
             "track_source": self.source
 
         }
@@ -65,7 +76,23 @@ class TrackExtractorImpuls(TrackExtractor):
         return result.get("title")
 
     def _do_request(self) -> requests.Response:
-        return requests.get(str(self.source.value), verify=False)
+        res = requests.get(str(self.source.value), verify=False)
+        if res.status_code not in (201, 200):
+            raise RadioRequestFailed(f"Failed to fetch {self.source} with {res.status_code = }", res.status_code)
+        return res
+
+
+class TrackExtractorWithYtID(TrackExtractorImpuls):
+    def __init__(self, source: TrackSources):
+        super().__init__(source)
+
+    def get_with_track_yt_id(self) -> Dict[str, Union[str, time]]:
+        """ Add search and find YouTube track ID """
+        track = self.get_track()
+        yt_details = StreamMediaYoutube(YoutubeSearch).find_track(track.get("radio_name"))
+        track['track_singer'] = yt_details['yt_song_artists']
+        track['track_yt_id'] = yt_details["yt_song_id"]
+        return track
 
 
 class StreamMedia(Protocol):
@@ -130,15 +157,16 @@ class StreamMediaSpotify:
 
 
 class StreamMediaYoutube:
-    def __init__(self):
+    def __init__(self, search_engine: SEARCH_ENGINE):
         self.yt_search = None
         self.stream = None
         self.yt_song_obj = None
         self.track_name = None
+        self.search_engine = search_engine
 
-    def find_track(self, track_name: str) -> Union[Dict[None, None], Dict[str, Union[str, datetime.now]]]:
+    def find_track(self, track_name: str) -> Dict[str, Union[str,  datetime.now, None]]:
         """ Get/ Find track details from YouTube """
-        # Add lyrics str to prevent VEVO(license) video to stream
+        # Add lyrics str to prevent VEVO (license) video to stream
         self.track_name = track_name
         self.search_song()
         self.yt_song_obj = self.__filter_search()
@@ -150,15 +178,15 @@ class StreamMediaYoutube:
         track_details.update(**self.__find_song(), **self.__find_artist_and_song(), **self.__find_song_thumbnail())
         return track_details
 
-    def search_song(self):
+    def search_song(self,):
         """ Search song on YouTube based on track name """
         # Prevent search of VEVO video to pass video license
-        self.yt_search = PytubeSearch(self.track_name)
+        self.yt_search = self.search_engine(self.track_name)
 
     def __levenshtein_order_songs(self) -> fuzzy_process.extract:
         """ Order songs based Levenshtein Algorithm """
         track_name_lyrics = f"{self.track_name} official"
-        songs_dict = {i: song.title for i, song in enumerate(self.yt_search.results)}
+        songs_dict = {i: song.get("title") for i, song in enumerate(self.yt_search.videos)}
         return fuzzy_process.extract(track_name_lyrics, songs_dict)[:3]  # return only first 3 elements
 
     def __filter_search(self) -> Union[YouTube, None]:
@@ -168,12 +196,16 @@ class StreamMediaYoutube:
         """
         levenshtein_list = self.__levenshtein_order_songs()
         for title, score, _index in levenshtein_list:
-            chosen_song = self.yt_search.results[_index]
-            check_mp3_status = self.__check_mp3_status(chosen_song.streams.get_audio_only("mp4").url)
-            check_thumbnail = self.__check_thumbnail(chosen_song.thumbnail_url)
-            if all([check_thumbnail, check_mp3_status]):
-                self.download_song(chosen_song)
-                return chosen_song
+            # chosen_song = self.yt_search.results[_index] # for pytubeSearch
+            chosen_song = self.yt_search.videos[_index]
+            # check_mp3_status = self.__check_mp3_status(chosen_song.streams.get_audio_only("mp4").url) #pytubeSearch
+            # check_thumbnail = self.__check_thumbnail(chosen_song.thumbnail_url)
+            check_thumbnail = self.__check_thumbnail(chosen_song.get("thumbnails", [""])[0])
+            # if all([check_thumbnail, check_mp3_status]):
+            # if all([check_thumbnail]):
+            #     self.download_song(chosen_song)
+            #     return chosen_song
+            return chosen_song
         return None
 
     @staticmethod
@@ -201,30 +233,29 @@ class StreamMediaYoutube:
         except Exception as e:
             logger.debug(f"Mp3 check got exception {e}")
         return False
+    # for pytubeSearch
+    # def __find_song(self) -> Dict[str, str]:
+    #     logger.debug(f"Loading song: {self.yt_song_obj.streams.get_audio_only('mp4')}")
+    #     return dict(yt_song_id=self.yt_song_obj.video_id,
+    #                 yt_song_mp4=self.yt_song_obj.streams.get_audio_only("mp4").url,
+    #                 local_track_url=f"https://artradio-backend.herokuapp.com/static/songs/local_track_"
+    #                                 f"{self.yt_song_obj.video_id}.mp4")
 
     def __find_song(self) -> Dict[str, str]:
-        logger.debug(f"Loading song: {self.yt_song_obj.streams.get_audio_only('mp4')}")
-        return {
-            "yt_song_id": self.yt_song_obj.video_id,
-            "yt_song_mp4": self.yt_song_obj.streams.get_audio_only("mp4").url,
-            "local_track_url": f"https://artradio-backend.herokuapp.com/static/songs/local_track_"
-                               f"{self.yt_song_obj.video_id}.mp4"
-        }
-
+        return dict(yt_song_id=self.yt_song_obj.get("id"))
 
     def __find_artist_and_song(self) -> Dict[str, str]:
-        logger.debug(f"Loading artist details: {self.yt_song_obj.title}")
-        artists = song_name = self.yt_song_obj.title
-        if '-' in self.yt_song_obj.title:
-            artists, song_name = self.yt_song_obj.title.split(" - ", 1)
+        title = self.yt_song_obj.get("title")
+        logger.debug(f"Loading artist details: {title}")
+        artists = song_name = title
+        if '-' in title:
+            artists, song_name = title.split(" - ", 1)
 
         return {"yt_song_artists": artists.strip(),
                 "yt_song_name": song_name.strip(),
-                "yt_song_title": self.yt_song_obj.title}
+                "yt_song_title": title}
 
     def __find_song_thumbnail(self) -> Dict[str, str]:
-        logger.debug(f"Loading thumbnail details: {self.yt_song_obj.thumbnail_url}")
-        return {"yt_song_thumbnail": self.yt_song_obj.thumbnail_url}
-
-
-
+        thumbnails = self.yt_song_obj.get("thumbnails", [""])
+        logger.debug(f"Loading thumbnail details: {thumbnails}")
+        return {"yt_song_thumbnail": thumbnails[0]}
