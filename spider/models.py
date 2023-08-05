@@ -8,6 +8,7 @@ class TrackModel(models.Model):
     track_source = models.CharField(max_length=244)
     track_singer = models.CharField(max_length=244)
     track_name = models.CharField(max_length=244)
+    track_yt_id = models.CharField(max_length=20, editable=True, null=True, blank=True)
     track_date = models.DateTimeField(auto_now=True, editable=True)
     track_date_updated = models.DateTimeField(default=timezone.now, editable=True)
 

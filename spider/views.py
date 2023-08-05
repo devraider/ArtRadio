@@ -7,12 +7,12 @@ from rest_framework import permissions
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import UserSerializer
-from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify, StreamMediaYoutube
+from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify, StreamMediaYoutube,\
+    TrackExtractorWithYtID
 from .models import TrackModel, SpotifyModel
 import logging
 from django.core.exceptions import ObjectDoesNotExist
-import requests
-
+from pytube import Search as PytubeSearch, YouTube
 # Instantiate logger with file name
 logger = logging.getLogger(__name__)
 
@@ -44,9 +44,9 @@ def yt_spider_search(request):
         query_songs = request.body.get("querySongs")
         if query_songs:
             for song in query_songs:
-                songs_result.append(StreamMediaYoutube().find_track(song))
+                songs_result.append(StreamMediaYoutube(PytubeSearch).find_track(song))
     elif request.GET:
-        yt_search = StreamMediaYoutube().find_track(request.query_params.get("query", "kZ0M8hgRQag"))
+        yt_search = StreamMediaYoutube(PytubeSearch).find_track(request.query_params.get("query", "kZ0M8hgRQag"))
         songs_result.append(yt_search)
     logger.debug(f"Searched: {songs_result}")
     return Response(songs_result)
@@ -58,12 +58,13 @@ def your_view_function(request):
     # response['Content-Disposition'] = 'attachment; filename=filename.mp3'
     return HttpResponse(file, mimetype="audio/mpeg")
 
+
 def spotify_handler_spider_radio() -> dict:
     """
     Just a function to keep steps for Spider to parse radio save and search track on Spotify.
     Used to be triggerd from AP Scheduler and View function.
     """
-    t = TrackExtractorImpuls(TrackSources.IMPULS)
+    t = TrackExtractorWithYtID(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     spotify_details = StreamMediaSpotify().find_track(details.radio_name)
     model_track, created_track = TrackModel.objects.update_or_create(**details.__dict__)
@@ -81,16 +82,19 @@ def spotify_handler_spider_radio() -> dict:
 
 def handler_spider_radio() -> dict:
     """Extract track from IMPULS radio and save it to Database into TrackModel"""
-    t = TrackExtractorImpuls(TrackSources.IMPULS)
-    details = TrackDetails(**t.get_track())
+    t = TrackExtractorWithYtID(TrackSources.IMPULS)
+    print(f"Something: {t.get_with_track_yt_id()}")
+    details = TrackDetails(**t.get_with_track_yt_id())
     # Insert track in database
     try:
-        if model := TrackModel.objects.filter(radio_name=details.radio_name):
-            model.update(track_date_updated=datetime.now())
+        if model := TrackModel.objects.get(radio_name=details.radio_name):
+            print(f"model.track_yt_id{model.track_yt_id} => {details.track_yt_id}")
+            if not model.track_yt_id:
+                model.track_yt_id = details.track_yt_id
+            model.track_date_updated = datetime.now()
+            model.save()
         else:
             TrackModel(**details.__dict__).save()
-
-        print("1")
     except ObjectDoesNotExist:
         TrackModel(**details.__dict__).save()
     logger.debug(f"TrackModel was added")
