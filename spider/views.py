@@ -96,7 +96,8 @@ def handler_spider_radio() -> dict:
         else:
             TrackModel(**details.__dict__).save()
     except ObjectDoesNotExist:
-        TrackModel(**details.__dict__).save()
+        logger.debug(f" Here should be inserted second/ duplicate obj {details.__dict__}")
+        # TrackModel(**details.__dict__).save()
     logger.debug(f"TrackModel was added")
     return {k: str(v) for k, v in details.__dict__.items()}
 

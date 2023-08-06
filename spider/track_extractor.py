@@ -12,6 +12,9 @@ from datetime import datetime
 import logging
 from fuzzywuzzy import process as fuzzy_process
 from youtube_search import YoutubeSearch
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 
 # Instantiate logger because can not import logger from view
 logger = logging.getLogger('spider.views')
@@ -96,22 +99,17 @@ class ImpulsTrackExtractorWithYtID(TrackExtractorImpuls):
         return track
 
 
-class VirginTrackExtractorWithYtID(TrackExtractorImpuls):
+class VirginTrackExtractor(TrackExtractor):
     def __init__(self, source: TrackSources):
         self.source = source
 
     def get_track(self) -> Dict[str, Union[str, time]]:
         """ Extract track from Virgin JSON """
-        result = self._do_request().json()
-        return {
-            "radio_name": self._extract_track(result),
-            "track_source": self.source
-
-        }
+        # TODO: Virgin radio has multiple songs in same JSON, need to implement something to get all of them
 
     @staticmethod
     def _extract_track(result: Dict[str, str]) -> str:
-        return result.get("title")
+        return result.get("songs")
 
     def _do_request(self) -> requests.Response:
         res = requests.get(str(self.source.value), verify=False)
@@ -270,11 +268,14 @@ class StreamMediaYoutube:
         return dict(yt_song_id=self.yt_song_obj.get("id"))
 
     def __find_artist_and_song(self) -> Dict[str, str]:
-        title = self.yt_song_obj.get("title")
+        title = self.yt_song_obj.get("title", "")
         logger.debug(f"Loading artist details: {title}")
         artists = song_name = title
         if '-' in title:
-            artists, song_name = title.split(" - ", 1)
+            try:
+                artists, song_name = title.split("-", 1)
+            except ValueError:
+                artists, song_name = title, title
 
         return {"yt_song_artists": artists.strip(),
                 "yt_song_name": song_name.strip(),
