@@ -2,4 +2,4 @@ Spider Scheduler:
   Cron:
     day_of_week: mon-sun
     hour: 9-22
-    minute: 2
+    second: 2

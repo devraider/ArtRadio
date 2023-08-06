@@ -32,6 +32,7 @@ class TrackSources(Enum):
     KISSFM = auto()
     DIGIFM = auto()
     IMPULS = 'https://www.radioimpuls.ro/title-updater.php'
+    VIRGIN = 'https://virginradio.ro/track_info.json'
 
 
 @dataclass
@@ -64,9 +65,9 @@ class TrackExtractorImpuls(TrackExtractor):
 
     def get_track(self) -> Dict[str, Union[str, time]]:
         """ Extract track from Impuls JSON """
-        # result = self._do_request().json()
+        result = self._do_request().json()
         return {
-            "radio_name": "Nicole Cherry x Tata Vlad - Fum si scrum",
+            "radio_name": self._extract_track(result),
             "track_source": self.source
 
         }
@@ -82,7 +83,7 @@ class TrackExtractorImpuls(TrackExtractor):
         return res
 
 
-class TrackExtractorWithYtID(TrackExtractorImpuls):
+class ImpulsTrackExtractorWithYtID(TrackExtractorImpuls):
     def __init__(self, source: TrackSources):
         super().__init__(source)
 
@@ -93,6 +94,30 @@ class TrackExtractorWithYtID(TrackExtractorImpuls):
         track['track_singer'] = yt_details['yt_song_artists']
         track['track_yt_id'] = yt_details["yt_song_id"]
         return track
+
+
+class VirginTrackExtractorWithYtID(TrackExtractorImpuls):
+    def __init__(self, source: TrackSources):
+        self.source = source
+
+    def get_track(self) -> Dict[str, Union[str, time]]:
+        """ Extract track from Virgin JSON """
+        result = self._do_request().json()
+        return {
+            "radio_name": self._extract_track(result),
+            "track_source": self.source
+
+        }
+
+    @staticmethod
+    def _extract_track(result: Dict[str, str]) -> str:
+        return result.get("title")
+
+    def _do_request(self) -> requests.Response:
+        res = requests.get(str(self.source.value), verify=False)
+        if res.status_code not in (201, 200):
+            raise RadioRequestFailed(f"Failed to fetch {self.source} with {res.status_code = }", res.status_code)
+        return res
 
 
 class StreamMedia(Protocol):

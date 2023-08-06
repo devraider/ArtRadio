@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import UserSerializer
 from .track_extractor import TrackSources, TrackDetails, TrackExtractorImpuls, StreamMediaSpotify, StreamMediaYoutube,\
-    TrackExtractorWithYtID
+    ImpulsTrackExtractorWithYtID
 from .models import TrackModel, SpotifyModel
 import logging
 from django.core.exceptions import ObjectDoesNotExist
@@ -64,7 +64,7 @@ def spotify_handler_spider_radio() -> dict:
     Just a function to keep steps for Spider to parse radio save and search track on Spotify.
     Used to be triggerd from AP Scheduler and View function.
     """
-    t = TrackExtractorWithYtID(TrackSources.IMPULS)
+    t = ImpulsTrackExtractorWithYtID(TrackSources.IMPULS)
     details = TrackDetails(**t.get_track())
     spotify_details = StreamMediaSpotify().find_track(details.radio_name)
     model_track, created_track = TrackModel.objects.update_or_create(**details.__dict__)
@@ -82,7 +82,7 @@ def spotify_handler_spider_radio() -> dict:
 
 def handler_spider_radio() -> dict:
     """Extract track from IMPULS radio and save it to Database into TrackModel"""
-    t = TrackExtractorWithYtID(TrackSources.IMPULS)
+    t = ImpulsTrackExtractorWithYtID(TrackSources.IMPULS)
     print(f"Something: {t.get_with_track_yt_id()}")
     details = TrackDetails(**t.get_with_track_yt_id())
     # Insert track in database
